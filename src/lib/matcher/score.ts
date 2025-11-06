@@ -1,5 +1,6 @@
 import { Position } from "@models/position";
 import { tokenize } from "./normalize";
+import { getBestMatch } from "../fuzzy/get-best-match";
 
 export function calculateKeywordScore(
   tokens: string[],
@@ -20,3 +21,11 @@ export function calculateKeywordScore(
   return matchedTokens.length / totalTokens;
 }
 
+export function calculateFuzzyScore(
+  intakeText: string,
+  position: Position
+): number {
+  const positionText = `${position.short_name_en} ${position.description_en}`;
+
+  return getBestMatch(intakeText, positionText);
+}
