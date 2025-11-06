@@ -2,6 +2,8 @@ import { Position } from "@models/position";
 import { tokenize } from "./normalize";
 import { getBestMatch } from "../fuzzy/get-best-match";
 
+const CATEGORY_BOOST_VALUE = 0.2;
+
 export function calculateKeywordScore(
   tokens: string[],
   position: Position
@@ -28,4 +30,11 @@ export function calculateFuzzyScore(
   const positionText = `${position.short_name_en} ${position.description_en}`;
 
   return getBestMatch(intakeText, positionText);
+}
+
+export function calculateCategoryBoost(difficultAccess: boolean): number {
+  if (difficultAccess) {
+    return CATEGORY_BOOST_VALUE;
+  }
+  return 0;
 }
