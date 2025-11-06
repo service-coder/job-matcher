@@ -7,7 +7,7 @@ type AppStore = AppState & AppActions;
 export const useAppStore = create<AppStore>((set) => ({
   catalogue: null,
   results: [],
-  pageState: "loading",
+  pageState: "ready",
   errorMessage: "",
 
   setCatalogue: (catalogue) => set({ catalogue }),

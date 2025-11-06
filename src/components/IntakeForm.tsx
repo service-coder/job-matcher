@@ -8,14 +8,22 @@ import { Input } from "./ui/Input";
 import { PhoneInput } from "./ui/PhoneInput";
 import { Textarea } from "./ui/Textarea";
 import { Checkbox } from "./ui/Checkbox";
-import { intakeSchema, type IntakeFormData } from "../lib/validation/schemas/intake";
+import {
+  intakeSchema,
+  type IntakeFormData,
+} from "../lib/validation/schemas/intake";
 
 type IntakeFormProps = {
-  onSubmit: (data: IntakeFormData) => void;
+  onSubmit: (data: IntakeFormData) => void | Promise<void>;
   onClear?: () => void;
+  isLoading?: boolean;
 };
 
-export function IntakeForm({ onSubmit, onClear }: IntakeFormProps) {
+export function IntakeForm({
+  onSubmit,
+  onClear,
+  isLoading = false,
+}: IntakeFormProps) {
   const {
     register,
     control,
@@ -112,10 +120,15 @@ export function IntakeForm({ onSubmit, onClear }: IntakeFormProps) {
       />
 
       <div className="flex gap-2">
-        <Button type="submit" variant="primary">
-          Run Matching
+        <Button type="submit" variant="primary" disabled={isLoading}>
+          {isLoading ? "Processing..." : "Run Matching"}
         </Button>
-        <Button type="button" variant="secondary" onClick={handleClear}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleClear}
+          disabled={isLoading}
+        >
           Clear
         </Button>
       </div>
