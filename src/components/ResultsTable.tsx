@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { MatchResult } from "@models/match";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import { ResultsRow } from "./ResultsRow";
 
 type ResultsTableProps = {
   results: MatchResult[];
@@ -125,28 +126,11 @@ export function ResultsTable({ results }: ResultsTableProps) {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredAndSorted.map((result, index) => (
-                <tr key={`${result.position.position_number}-${index}`}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {result.position.position_number}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {result.position.short_name_en}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {result.score.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <div className="space-y-1">
-                      {result.why.matchedKeywords.length > 0 && (
-                        <div>
-                          Keywords: {result.why.matchedKeywords.join(", ")}
-                        </div>
-                      )}
-                      {result.why.fuzzyMatch && <div>Fuzzy match</div>}
-                      {result.why.categoryBoost && <div>Category boost</div>}
-                    </div>
-                  </td>
-                </tr>
+                <ResultsRow
+                  key={`${result.position.position_number}-${index}`}
+                  result={result}
+                  index={index}
+                />
               ))}
             </tbody>
           </table>
