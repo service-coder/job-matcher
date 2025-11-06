@@ -1,13 +1,15 @@
 "use client";
 
 import { MatchResult } from "@models/match";
+import { highlightText } from "@utils/highlight";
 
 type ResultsRowProps = {
   result: MatchResult;
   index: number;
+  searchTerm?: string;
 };
 
-export function ResultsRow({ result, index }: ResultsRowProps) {
+export function ResultsRow({ result, index, searchTerm = "" }: ResultsRowProps) {
   const reasons: string[] = [];
 
   if (result.why.matchedKeywords.length > 0) {
@@ -25,18 +27,21 @@ export function ResultsRow({ result, index }: ResultsRowProps) {
   return (
     <tr>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {result.position.position_number}
+        {highlightText(
+          result.position.position_number.toString(),
+          searchTerm
+        )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {result.position.short_name_en}
+        {highlightText(result.position.short_name_en, searchTerm)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        {result.score.toFixed(2)}
+        {highlightText(result.score.toFixed(2), searchTerm)}
       </td>
       <td className="px-6 py-4 text-sm text-gray-500">
         <div className="space-y-1">
           {reasons.map((reason, idx) => (
-            <div key={idx}>{reason}</div>
+            <div key={idx}>{highlightText(reason, searchTerm)}</div>
           ))}
         </div>
       </td>

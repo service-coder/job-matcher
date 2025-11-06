@@ -130,6 +130,7 @@ export function ResultsTable({ results }: ResultsTableProps) {
                   key={`${result.position.position_number}-${index}`}
                   result={result}
                   index={index}
+                  searchTerm={filterText}
                 />
               ))}
             </tbody>
