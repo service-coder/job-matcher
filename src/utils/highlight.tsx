@@ -19,7 +19,7 @@ export function highlightText(text: string, searchTerm: string): ReactNode[] {
     parts.push(
       <mark
         key={`highlight-${index}`}
-        className="bg-yellow-200 text-gray-900 rounded"
+        className="bg-yellow-200 dark:bg-yellow-600 text-gray-900 dark:text-gray-100 rounded"
       >
         {text.substring(index, index + searchTerm.length)}
       </mark>

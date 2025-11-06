@@ -26,19 +26,19 @@ export function ResultsRow({ result, index, searchTerm = "" }: ResultsRowProps) 
 
   return (
     <tr>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
         {highlightText(
           result.position.position_number.toString(),
           searchTerm
         )}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
         {highlightText(result.position.short_name_en, searchTerm)}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
         {highlightText(result.score.toFixed(2), searchTerm)}
       </td>
-      <td className="px-6 py-4 text-sm text-gray-500">
+      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
         <div className="space-y-1">
           {reasons.map((reason, idx) => (
             <div key={idx}>{highlightText(reason, searchTerm)}</div>
