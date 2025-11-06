@@ -1,4 +1,4 @@
-import { IntakeData } from "@models/index";
+import { IntakeData } from "@models/intake";
 import { tokenize } from "./normalize";
 
 export interface IntakeSignals {
