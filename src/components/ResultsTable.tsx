@@ -1,12 +1,66 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { MatchResult } from "@models/match";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 
 type ResultsTableProps = {
   results: MatchResult[];
 };
 
+type SortDirection = "asc" | "desc";
+
 export function ResultsTable({ results }: ResultsTableProps) {
+  const [filterText, setFilterText] = useState("");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  const filteredAndSorted = useMemo(() => {
+    let filtered = results;
+
+    if (filterText.trim()) {
+      const searchLower = filterText.toLowerCase();
+      filtered = results.filter((result) => {
+        const searchableText = [
+          result.position.position_number.toString(),
+          result.position.short_name_en,
+          result.position.description_en,
+          result.score.toFixed(2),
+          result.why.matchedKeywords.join(" "),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return searchableText.includes(searchLower);
+      });
+    }
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortDirection === "desc") {
+        return b.score - a.score;
+      }
+      return a.score - b.score;
+    });
+
+    return sorted;
+  }, [results, filterText, sortDirection]);
+
+  const handleDownloadJSON = () => {
+    const dataStr = JSON.stringify(filteredAndSorted, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "match-results.json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleSort = () => {
+    setSortDirection((prev) => (prev === "desc" ? "asc" : "desc"));
+  };
+
   if (results.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -16,49 +70,88 @@ export function ResultsTable({ results }: ResultsTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Position
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Short Name
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Score
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Why
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {results.map((result, index) => (
-            <tr key={`${result.position.position_number}-${index}`}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {result.position.position_number}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {result.position.short_name_en}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {result.score.toFixed(2)}
-              </td>
-              <td className="px-6 py-4 text-sm text-gray-500">
-                <div className="space-y-1">
-                  {result.why.matchedKeywords.length > 0 && (
-                    <div>Keywords: {result.why.matchedKeywords.join(", ")}</div>
-                  )}
-                  {result.why.fuzzyMatch && <div>Fuzzy match</div>}
-                  {result.why.categoryBoost && <div>Category boost</div>}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="space-y-4">
+      <div className="flex gap-4 items-end">
+        <div className="flex-1">
+          <Input
+            id="filter"
+            type="text"
+            label="Filter"
+            placeholder="Search in results..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+          />
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={toggleSort}
+          className="whitespace-nowrap"
+        >
+          Sort: {sortDirection === "desc" ? "High→Low" : "Low→High"}
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
+          onClick={handleDownloadJSON}
+          className="whitespace-nowrap"
+        >
+          Download JSON
+        </Button>
+      </div>
+
+      {filteredAndSorted.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No results match the filter criteria.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Position
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Short Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Score
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Why
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredAndSorted.map((result, index) => (
+                <tr key={`${result.position.position_number}-${index}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {result.position.position_number}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {result.position.short_name_en}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {result.score.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    <div className="space-y-1">
+                      {result.why.matchedKeywords.length > 0 && (
+                        <div>
+                          Keywords: {result.why.matchedKeywords.join(", ")}
+                        </div>
+                      )}
+                      {result.why.fuzzyMatch && <div>Fuzzy match</div>}
+                      {result.why.categoryBoost && <div>Category boost</div>}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
