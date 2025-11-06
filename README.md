@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Matcher
 
-## Getting Started
+Smart job matching system that converts client intake into a ranked list of recommended positions from a trade catalogue.
 
-First, run the development server:
-
+## Prerequisites
+- node@22+, also available via nvm
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+nvm install
+# OR (if installed)
+nvm use
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+yarn install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Run development server
+yarn dev
 
-## Learn More
+# Open http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Scoring Formula
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The matching algorithm uses a weighted scoring system:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+score = w1 × keywordScore + w2 × fuzzyScore + w3 × categoryBoost
+```
 
-## Deploy on Vercel
+**Weights:**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `w1 = 0.6` - Keyword overlap (token matching)
+- `w2 = 0.3` - Fuzzy matching (Fuse.js similarity)
+- `w3 = 0.1` - Category boost (difficult access flag)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Scoring details:**
+
+- **Keyword score**: Token overlap ratio between intake text and position fields (`short_name_en`, `description_en`)
+- **Fuzzy score**: Fuse.js similarity (threshold: 0.6) between intake text and position text
+- **Category boost**: +0.2 if `difficultAccess` is true (applied to all positions)
+
+Results are deduplicated by `position_number`, sorted by score (descending), and limited to top 15.
+
+## Text Normalization
+
+All text processing uses the following normalization pipeline:
+
+1. **Lowercase conversion**
+2. **Diacritics removal** (é → e, ü → u)
+3. **Punctuation removal** (replaced with spaces)
+4. **Stop words filtering** (common words like "the", "and", "is")
+5. **Synonym mapping** (see below)
+
+## Synonyms
+
+Common synonym mappings (full list in `src/lib/matcher/normalize.ts`):
+
+- `installation` / `installing` → `install`
+- `repair` / `repairing` → `fix`
+- `window` / `windows` → `window`
+- `door` / `doors` → `door`
+
+## Tech Stack
+
+- **React Hook Form** - Form state management with minimal re-renders
+- **Zod** - Type-safe schema validation, integrated with RHF
+- **Tailwind CSS** - Utility-first styling with dark mode support
+- **Zustand** - Lightweight state management for app state
+- **Fuse.js** - Fuzzy string matching for similarity scoring
+- **Next.js 16** - App Router with API routes for server-side matching
+
+## Architecture
+
+- **Frontend**: Client components for UI, server components for pages
+- **Backend**: API route (`/api/match`) handles matching logic and catalogue loading
+- **Algorithm**: Deterministic scoring (no LLM) - see `src/lib/matcher/`
+- **Data**: Catalogue loaded from `public/assets/sample/service_catalog_en.json`
