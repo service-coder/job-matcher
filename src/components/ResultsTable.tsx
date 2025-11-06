@@ -72,7 +72,7 @@ export function ResultsTable({ results }: ResultsTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4 items-end">
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
         <div className="flex-1">
           <Input
             id="filter"
@@ -83,22 +83,24 @@ export function ResultsTable({ results }: ResultsTableProps) {
             onChange={(e) => setFilterText(e.target.value)}
           />
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={toggleSort}
-          className="whitespace-nowrap"
-        >
-          Sort: {sortDirection === "desc" ? "High→Low" : "Low→High"}
-        </Button>
-        <Button
-          type="button"
-          variant="primary"
-          onClick={handleDownloadJSON}
-          className="whitespace-nowrap"
-        >
-          Download JSON
-        </Button>
+        <div className="flex gap-2 sm:shrink-0">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={toggleSort}
+            className="whitespace-nowrap flex-1 sm:flex-none"
+          >
+            Sort: {sortDirection === "desc" ? "High→Low" : "Low→High"}
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleDownloadJSON}
+            className="whitespace-nowrap flex-1 sm:flex-none"
+          >
+            Download JSON
+          </Button>
+        </div>
       </div>
 
       {filteredAndSorted.length === 0 ? (
@@ -106,35 +108,38 @@ export function ResultsTable({ results }: ResultsTableProps) {
           No results match the filter criteria.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Position
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Short Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Score
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Why
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredAndSorted.map((result, index) => (
-                <ResultsRow
-                  key={`${result.position.position_number}-${index}`}
-                  result={result}
-                  index={index}
-                  searchTerm={filterText}
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-x-auto -mx-6 sm:mx-0">
+          <div className="inline-block min-w-full align-middle">
+            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-700 sm:rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                      Position
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                      Short Name
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                      Score
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                      Why
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredAndSorted.map((result, index) => (
+                    <ResultsRow
+                      key={`${result.position.position_number}-${index}`}
+                      result={result}
+                      searchTerm={filterText}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>
