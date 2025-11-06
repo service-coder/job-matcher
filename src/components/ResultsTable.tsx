@@ -64,8 +64,29 @@ export function ResultsTable({ results }: ResultsTableProps) {
 
   if (results.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        No results found. Run matching to see results.
+      <div className="text-center py-12">
+        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+          <svg
+            className="h-6 w-6 text-gray-400 dark:text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+        </div>
+        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          No results found
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Run matching to see results
+        </p>
       </div>
     );
   }
@@ -107,8 +128,29 @@ export function ResultsTable({ results }: ResultsTableProps) {
       </div>
 
       {filteredAndSorted.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          No results match the filter criteria.
+        <div className="text-center py-12">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+            <svg
+              className="h-6 w-6 text-gray-400 dark:text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            No results match the filter
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Try adjusting your search criteria
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto -mx-6 sm:mx-0">
