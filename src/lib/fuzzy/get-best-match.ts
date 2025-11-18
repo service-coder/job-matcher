@@ -1,22 +1,43 @@
-import Fuse from "fuse.js";
+import { normalizeText } from "@lib/matcher/normalize";
+
+function buildBigrams(text: string): string[] {
+  const normalized = normalizeText(text);
+  if (!normalized) {
+    return [];
+  }
+
+  const bigrams: string[] = [];
+  for (let i = 0; i < normalized.length - 1; i++) {
+    bigrams.push(normalized.slice(i, i + 2));
+  }
+
+  return bigrams;
+}
 
 export function getBestMatch(intakeText: string, positionText: string): number {
-  const fuse = new Fuse([positionText], {
-    threshold: 0.6,
-    includeScore: true,
-    ignoreLocation: true,
-  });
+  const intakeBigrams = buildBigrams(intakeText);
+  const positionBigrams = buildBigrams(positionText);
 
-  const results = fuse.search(intakeText);
-
-  if (results.length === 0) {
+  if (intakeBigrams.length === 0 || positionBigrams.length === 0) {
     return 0;
   }
 
-  const bestMatch = results[0];
-  if (bestMatch.score === undefined || bestMatch.score === null) {
-    return 0;
+  const counts = new Map<string, number>();
+  for (const gram of intakeBigrams) {
+    counts.set(gram, (counts.get(gram) ?? 0) + 1);
   }
 
-  return 1 - bestMatch.score;
+  let intersection = 0;
+  for (const gram of positionBigrams) {
+    const current = counts.get(gram) ?? 0;
+    if (current > 0) {
+      intersection++;
+      counts.set(gram, current - 1);
+    }
+  }
+
+  const diceCoefficient =
+    (2 * intersection) / (intakeBigrams.length + positionBigrams.length);
+
+  return diceCoefficient;
 }

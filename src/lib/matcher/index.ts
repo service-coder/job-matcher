@@ -60,17 +60,18 @@ function generateMatchReason(
 function deduplicateByPositionNumber(
   results: MatchResult[]
 ): MatchResult[] {
-  const seen = new Set<number>();
-  const unique: MatchResult[] = [];
+  const bestByPosition = new Map<string, MatchResult>();
 
   for (const result of results) {
-    if (!seen.has(result.position.position_number)) {
-      seen.add(result.position.position_number);
-      unique.push(result);
+    const key = String(result.position.position_number);
+    const current = bestByPosition.get(key);
+
+    if (!current || result.score > current.score) {
+      bestByPosition.set(key, result);
     }
   }
 
-  return unique;
+  return Array.from(bestByPosition.values());
 }
 
 export function match(
@@ -94,7 +95,10 @@ export function match(
   for (const { position, tradeCode } of positionsWithTrade) {
     const keywordScore = calculateKeywordScore(signals.tokens, position);
     const fuzzyScore = calculateFuzzyScore(intakeText, position);
-    const categoryBoost = calculateCategoryBoost(signals.difficultAccess);
+    const categoryBoost = calculateCategoryBoost(
+      signals.difficultAccess,
+      tradeCode
+    );
 
     const finalScore =
       WEIGHTS.keyword * keywordScore +

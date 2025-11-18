@@ -3,6 +3,7 @@ import { tokenize } from "./normalize";
 import { getBestMatch } from "../fuzzy/get-best-match";
 
 const CATEGORY_BOOST_VALUE = 0.2;
+const DIFFICULT_ACCESS_TRADE_CODES = new Set(["0300"]);
 
 export function calculateKeywordScore(
   tokens: string[],
@@ -32,9 +33,17 @@ export function calculateFuzzyScore(
   return getBestMatch(intakeText, positionText);
 }
 
-export function calculateCategoryBoost(difficultAccess: boolean): number {
-  if (difficultAccess) {
+export function calculateCategoryBoost(
+  difficultAccess: boolean,
+  tradeCode: string
+): number {
+  if (!difficultAccess) {
+    return 0;
+  }
+
+  if (DIFFICULT_ACCESS_TRADE_CODES.has(tradeCode)) {
     return CATEGORY_BOOST_VALUE;
   }
+
   return 0;
 }

@@ -3,8 +3,9 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 
 import { match } from "@lib/matcher";
-import { IntakeData } from "@models/intake";
 import { Catalogue } from "@models/catalogue";
+import { IntakeData } from "@models/intake";
+import { intakeSchema } from "@lib/validation/schemas/intake";
 
 let cachedCatalogue: Catalogue | null = null;
 
@@ -41,14 +42,19 @@ async function loadCatalogue(): Promise<Catalogue> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const intakeData: IntakeData = body;
+    const parsed = intakeSchema.safeParse(body);
 
-    if (!intakeData || !intakeData.description) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid intake data" },
+        {
+          error: "Invalid intake data",
+          details: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
+
+    const intakeData: IntakeData = parsed.data;
 
     const catalogue = await loadCatalogue();
     const results = match(intakeData, catalogue, 15);
