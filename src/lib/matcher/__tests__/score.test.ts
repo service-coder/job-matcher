@@ -137,13 +137,18 @@ describe("Scoring Functions", () => {
   });
 
   describe("calculateCategoryBoost", () => {
-    it("should return 0.2 when difficultAccess is true", () => {
-      const boost = calculateCategoryBoost(true);
+    it("should return 0.2 when difficultAccess trade is matched", () => {
+      const boost = calculateCategoryBoost(true, "0300");
       expect(boost).toBe(0.2);
     });
 
     it("should return 0 when difficultAccess is false", () => {
-      const boost = calculateCategoryBoost(false);
+      const boost = calculateCategoryBoost(false, "0300");
+      expect(boost).toBe(0);
+    });
+
+    it("should return 0 for non-accessibility trades", () => {
+      const boost = calculateCategoryBoost(true, "0100");
       expect(boost).toBe(0);
     });
   });
@@ -209,8 +214,28 @@ describe("Scoring Functions", () => {
       }
     });
 
-    it("should apply category boost when difficultAccess is true", () => {
-      const catalogue = createTestCatalogue();
+    it("should apply category boost only to accessibility trade when difficultAccess is true", () => {
+      const catalogue: Catalogue = {
+        trades: [
+          ...createTestCatalogue().trades,
+          {
+            code: "0300",
+            name_de: "Zugänglichkeit",
+            name_en: "Accessibility",
+            positions: [
+              {
+                position_number: 400,
+                short_name_en: "Difficult access support",
+                short_name_de: "",
+                unit: "Stk.",
+                description_en: "Use equipment for difficult access",
+                description_de: "",
+                hero: false,
+              },
+            ],
+          },
+        ],
+      };
       const intake: IntakeData = {
         name: "Jane Doe",
         phone: "+1234567890",
@@ -221,18 +246,19 @@ describe("Scoring Functions", () => {
       };
 
       const results = match(intake, catalogue, 15);
+      const boosted = results.filter((r) => r.why.categoryBoost);
 
-      const difficultAccessPosition = results.find(
-        (r) => r.position.position_number === 300
-      );
-
-      expect(difficultAccessPosition).toBeDefined();
-      if (difficultAccessPosition) {
-        expect(difficultAccessPosition.why.categoryBoost).toBe(true);
+      expect(boosted.length).toBeGreaterThan(0);
+      for (const matchResult of results) {
+        if (matchResult.position.position_number === 400) {
+          expect(matchResult.why.categoryBoost).toBe(true);
+        } else {
+          expect(matchResult.why.categoryBoost).toBe(false);
+        }
       }
     });
 
-    it("should deduplicate by position_number", () => {
+    it("should keep the highest scoring duplicate when deduplicating", () => {
       const catalogue: Catalogue = {
         trades: [
           {
@@ -242,10 +268,10 @@ describe("Scoring Functions", () => {
             positions: [
               {
                 position_number: 100,
-                short_name_en: "Install windows",
+                short_name_en: "Install windows generic",
                 short_name_de: "",
                 unit: "Stk.",
-                description_en: "Install windows",
+                description_en: "General installation",
                 description_de: "",
                 hero: false,
               },
@@ -258,10 +284,10 @@ describe("Scoring Functions", () => {
             positions: [
               {
                 position_number: 100,
-                short_name_en: "Install windows duplicate",
+                short_name_en: "Install custom windows",
                 short_name_de: "",
                 unit: "Stk.",
-                description_en: "Install windows duplicate",
+                description_en: "Install custom windows with special fittings",
                 description_de: "",
                 hero: false,
               },
@@ -275,16 +301,16 @@ describe("Scoring Functions", () => {
         phone: "+1234567890",
         email: "test@example.com",
         address: "Test",
-        description: "install windows",
+        description: "install custom windows",
         difficultAccess: false,
       };
 
       const results = match(intake, catalogue, 15);
 
-      const positionNumbers = results.map((r) => r.position.position_number);
-      const uniqueNumbers = new Set(positionNumbers);
-
-      expect(positionNumbers.length).toBe(uniqueNumbers.size);
+      expect(results.filter((r) => r.position.position_number === 100)).toHaveLength(
+        1
+      );
+      expect(results[0].position.short_name_en).toContain("custom");
     });
 
     it("should handle empty description", () => {
